@@ -3,15 +3,13 @@ package com.bayron.springcloud.msvc.items.services;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
+import com.bayron.springcloud.msvc.items.models.Product;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import com.bayron.springcloud.msvc.items.clients.ProductFeignClient;
 import com.bayron.springcloud.msvc.items.models.Item;
-import com.bayron.springcloud.msvc.items.models.Product;
 
 @Service
 public class ItemServiceFeign implements ItemService {
@@ -23,14 +21,18 @@ public class ItemServiceFeign implements ItemService {
     public List<Item> findAll() {
         return client.findAll()
                 .stream()
-                .map(p -> new Item(p, new Random().nextInt(10) + 1))
+                .map(product -> new Item(product, new Random().nextInt(10) + 1))
                 .collect(Collectors.toList());
     }
 
     @Override
     public Optional<Item> findById(Long id) {
-        return Optional.ofNullable(
-                new Item(client.findById(id).orElse(null), new Random().nextInt(10) + 1));
-    }
+        Product product = client.datails(id);
 
+        if (product == null) {
+            return Optional.empty();
+        }
+
+        return Optional.of(new Item(client.datails(id), new Random().nextInt(10) + 1));
+    }
 }
